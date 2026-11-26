@@ -44,6 +44,19 @@ kbd {
   background: var(--bg-subtle);
 }
 
+.drag-handle {
+  width: 18px;
+  padding: 0;
+  flex: none;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  letter-spacing: -2px;
+  cursor: grab;
+}
+.drag-handle:active { cursor: grabbing; }
+li.dragging { opacity: 0.35; }
+
 /* Decks */
 .decks {
   display: grid;
@@ -93,7 +106,7 @@ kbd {
 }
 #dest-list > li {
   display: grid;
-  grid-template-columns: 16px 28px minmax(90px, 150px) minmax(0, 1fr) auto;
+  grid-template-columns: 18px 16px 28px minmax(90px, 150px) minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 6px;
   padding: 6px 8px;
@@ -102,10 +115,10 @@ kbd {
 #dest-list > li:last-child { border-bottom: 0; }
 #dest-list .icon-edit { background: transparent; border-color: transparent; }
 #dest-list .icon-edit:hover { border-color: var(--border); }
-#dest-list .template { grid-area: 1 / 4; }
-#dest-list .actions { grid-area: 1 / 5; display: flex; gap: 2px; }
+#dest-list .template { grid-area: 1 / 5; }
+#dest-list .actions { grid-area: 1 / 6; display: flex; gap: 2px; }
 #dest-list .detail {
-  grid-column: 4 / -1;
+  grid-column: 5 / -1;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -148,8 +161,8 @@ kbd {
 @media (max-width: 700px) {
   .decks { grid-template-columns: 1fr; }
   .fields { grid-template-columns: 1fr; gap: 4px; }
-  #dest-list > li { grid-template-columns: 16px 28px minmax(0, 1fr) auto; }
-  #dest-list .actions { grid-area: 1 / 4; }
+  #dest-list > li { grid-template-columns: 18px 16px 28px minmax(0, 1fr) auto; }
+  #dest-list .actions { grid-area: 1 / 5; }
   #dest-list .template { grid-area: 2 / 1 / auto / -1; }
   #dest-list .detail { grid-column: 1 / -1; }
 }

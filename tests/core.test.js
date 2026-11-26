@@ -204,12 +204,16 @@ test('duplicateDeck makes an independent copy with fresh ids and a unique name',
 });
 
 test('moveItem', () => {
-  const list = ['a', 'b', 'c'];
+  const list = ['a', 'b', 'c', 'd'];
   assert.equal(moveItem(list, 0, 1), true);
-  assert.deepEqual(list, ['b', 'a', 'c']);
-  assert.equal(moveItem(list, 2, -1), true);
-  assert.deepEqual(list, ['b', 'c', 'a']);
+  assert.deepEqual(list, ['b', 'a', 'c', 'd']);
+  assert.equal(moveItem(list, 3, 0), true);
+  assert.deepEqual(list, ['d', 'b', 'a', 'c']);
+  assert.equal(moveItem(list, 0, 3), true);
+  assert.deepEqual(list, ['b', 'a', 'c', 'd']);
   assert.equal(moveItem(list, 0, -1), false);
-  assert.equal(moveItem(list, 2, 1), false);
-  assert.deepEqual(list, ['b', 'c', 'a']);
+  assert.equal(moveItem(list, 3, 4), false);
+  assert.equal(moveItem(list, 2, 2), false);
+  assert.equal(moveItem(list, NaN, 1), false);
+  assert.deepEqual(list, ['b', 'a', 'c', 'd']);
 });

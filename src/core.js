@@ -175,11 +175,11 @@ export function duplicateDeck(deck, takenNames = []) {
   };
 }
 
-/** Moves list[index] by delta (-1 / +1) in place. Returns false if it would leave the list. */
-export function moveItem(list, index, delta) {
-  const target = index + delta;
-  if (index < 0 || index >= list.length || target < 0 || target >= list.length) return false;
-  const [item] = list.splice(index, 1);
-  list.splice(target, 0, item);
+/** Moves list[from] to position `to` in place. Returns false if nothing moved. */
+export function moveItem(list, from, to) {
+  const valid = (i) => Number.isInteger(i) && i >= 0 && i < list.length;
+  if (!valid(from) || !valid(to) || from === to) return false;
+  const [item] = list.splice(from, 1);
+  list.splice(to, 0, item);
   return true;
 }

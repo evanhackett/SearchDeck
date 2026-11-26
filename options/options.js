@@ -91,6 +91,84 @@ function smallButton(label, ariaLabel, action, onclick, disabled = false) {
   });
 }
 
+function dragHandle(name) {
+  const label = `Reorder ${name}: drag, or press the up and down arrow keys`;
+  return h('button', {
+    type: 'button',
+    className: 'drag-handle',
+    textContent: '⋮⋮',
+    draggable: true,
+    title: 'Drag to reorder (or focus and press ↑ ↓)',
+    ariaLabel: label,
+    dataset: { action: 'drag' },
+  });
+}
+
+/**
+ * Makes the <li> rows of `list` reorderable by their .drag-handle: drag with the
+ * mouse, or focus the handle and press the arrow keys. Rows move live while
+ * dragging; the array from getItems() is only changed on a successful drop.
+ */
+function makeSortable(list, getItems, render) {
+  let dragging = null;
+  let from = -1;
+  let dropped = false;
+  const indexOf = (li) => [...list.children].indexOf(li);
+  const apply = (fromIndex, toIndex) => {
+    if (!moveItem(getItems(), fromIndex, toIndex)) return false;
+    commit();
+    render();
+    return true;
+  };
+
+  list.addEventListener('dragstart', (event) => {
+    const li = event.target.closest?.('.drag-handle')?.closest('li');
+    if (!li || li.parentNode !== list) return;
+    dragging = li;
+    from = indexOf(li);
+    dropped = false;
+    const rect = li.getBoundingClientRect();
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', '');
+    event.dataTransfer.setDragImage(li, event.clientX - rect.left, event.clientY - rect.top);
+    requestAnimationFrame(() => li.classList.add('dragging')); // after the drag image is captured
+  });
+
+  list.addEventListener('dragover', (event) => {
+    if (!dragging) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const over = event.target.closest?.('li');
+    if (!over || over === dragging || over.parentNode !== list) return;
+    const rect = over.getBoundingClientRect();
+    const after = event.clientY > rect.top + rect.height / 2;
+    list.insertBefore(dragging, after ? over.nextSibling : over);
+  });
+
+  list.addEventListener('drop', (event) => {
+    if (!dragging) return;
+    event.preventDefault();
+    dropped = true;
+  });
+
+  list.addEventListener('dragend', () => {
+    if (!dragging) return;
+    const to = indexOf(dragging);
+    dragging = null;
+    // Cancelled (Escape, or released outside the list): put the rows back.
+    if (!dropped || !apply(from, to)) render();
+  });
+
+  list.addEventListener('keydown', (event) => {
+    const delta = { ArrowUp: -1, ArrowDown: 1 }[event.key];
+    const li = event.target.closest?.('.drag-handle')?.closest('li');
+    if (!delta || !li || event.altKey || event.ctrlKey || event.metaKey) return;
+    event.preventDefault();
+    const index = indexOf(li);
+    if (apply(index, index + delta)) refocus(list.id, li.dataset.id, 'drag');
+  });
+}
+
 /** After a re-render, put focus back on the control the user just used. */
 function refocus(listId, id, action) {
   const row = $(listId).querySelector(`li[data-id="${CSS.escape(id)}"]`);
@@ -100,9 +178,8 @@ function refocus(listId, id, action) {
 
 function renderDeckList() {
   const current = selectedDeck();
-  const last = config.decks.length - 1;
   $('deck-list').replaceChildren(
-    ...config.decks.map((deck, i) => {
+    ...config.decks.map((deck) => {
       const select = h('button', {
         type: 'button',
         className: 'deck-select',
@@ -117,19 +194,7 @@ function renderDeckList() {
         },
       });
       if (deck.id === current.id) select.setAttribute('aria-current', 'true');
-      const move = (delta, action) => () => {
-        moveItem(config.decks, i, delta);
-        commit();
-        renderDeckList();
-        refocus('deck-list', deck.id, action);
-      };
-      return h(
-        'li',
-        { dataset: { id: deck.id } },
-        select,
-        smallButton('↑', `Move ${deck.name} up`, 'up', move(-1, 'up'), i === 0),
-        smallButton('↓', `Move ${deck.name} down`, 'down', move(1, 'down'), i === last),
-      );
+      return h('li', { dataset: { id: deck.id } }, dragHandle(deck.name), select);
     }),
   );
 }
@@ -140,10 +205,10 @@ function renderEditor() {
   $('deck-delete').disabled = config.decks.length <= 1;
   $('add-error').textContent = '';
   previewUpdaters = [];
-  $('dest-list').replaceChildren(...deck.destinations.map((d, i) => destinationRow(deck, d, i)));
+  $('dest-list').replaceChildren(...deck.destinations.map((d) => destinationRow(deck, d)));
 }
 
-function destinationRow(deck, dest, index) {
+function destinationRow(deck, dest) {
   const li = h('li', { dataset: { id: dest.id }, className: dest.enabled ? '' : 'disabled' });
 
   const enabled = h('input', { type: 'checkbox', checked: dest.enabled, title: 'Enabled', ariaLabel: `Enable ${dest.name}` });
@@ -230,18 +295,10 @@ function destinationRow(deck, dest, index) {
     commit();
   });
 
-  const move = (delta, action) => () => {
-    moveItem(deck.destinations, index, delta);
-    commit();
-    renderEditor();
-    refocus('dest-list', dest.id, action);
-  };
   const actions = h(
     'div',
     { className: 'actions' },
     test,
-    smallButton('↑', `Move ${dest.name} up`, 'up', move(-1, 'up'), index === 0),
-    smallButton('↓', `Move ${dest.name} down`, 'down', move(1, 'down'), index === deck.destinations.length - 1),
     smallButton('✕', `Remove ${dest.name}`, 'remove', () => {
       if (!confirm(`Remove "${dest.name}" from "${deck.name}"?`)) return;
       deck.destinations.splice(deck.destinations.indexOf(dest), 1);
@@ -251,7 +308,7 @@ function destinationRow(deck, dest, index) {
   );
   actions.lastChild.classList.add('danger');
 
-  li.append(enabled, iconButton, name, template, actions, h('div', { className: 'detail' }, preview, iconUrl, iconError));
+  li.append(dragHandle(dest.name), enabled, iconButton, name, template, actions, h('div', { className: 'detail' }, preview, iconUrl, iconError));
   return li;
 }
 
@@ -276,6 +333,8 @@ async function showShortcut() {
 
 function bindEvents() {
   chrome.storage.onChanged.addListener(onStorageChanged);
+  makeSortable($('deck-list'), () => config.decks, renderDeckList);
+  makeSortable($('dest-list'), () => selectedDeck().destinations, renderEditor);
   window.addEventListener('focus', showShortcut);
 
   $('sample').addEventListener('input', () => previewUpdaters.forEach((update) => update()));
