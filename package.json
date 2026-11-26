@@ -1,0 +1,10 @@
+{
+  "name": "searchdeck",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Only used to run the unit tests. The extension itself has no build step.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

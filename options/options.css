@@ -1,0 +1,155 @@
+body {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px 20px 48px;
+}
+
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+h1 { margin: 0; font-size: 16px; font-weight: 650; }
+h1 span { font-weight: 400; }
+h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; }
+#status { font-size: 12px; color: var(--text-muted); }
+#status.error { color: var(--danger); }
+
+main > section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+main > section:last-child { border-bottom: 0; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+.mono, #dest-list .template { font-family: var(--mono); font-size: 12px; }
+.inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+kbd {
+  font: 11px var(--mono);
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-subtle);
+}
+
+/* Decks */
+.decks {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+}
+#deck-list { margin-bottom: 8px; }
+#deck-list li { display: flex; gap: 2px; margin-bottom: 2px; }
+#deck-list .deck-select {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: transparent;
+  border-color: transparent;
+}
+#deck-list .deck-select:hover { background: var(--bg-hover); }
+#deck-list .deck-select[aria-current='true'] {
+  background: var(--bg-subtle);
+  border-color: var(--border);
+  font-weight: 600;
+}
+#deck-new { width: 100%; }
+
+.editor-head { display: flex; gap: 6px; }
+#deck-name { flex: 1; font-weight: 600; }
+
+.sample {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 6px;
+  font-size: 12px;
+}
+.sample input { width: 140px; }
+
+#dest-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+#dest-list:empty::after {
+  content: 'No destinations yet. Add one below.';
+  display: block;
+  padding: 12px;
+  color: var(--text-muted);
+}
+#dest-list > li {
+  display: grid;
+  grid-template-columns: 16px 28px minmax(90px, 150px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+#dest-list > li:last-child { border-bottom: 0; }
+#dest-list .icon-edit { background: transparent; border-color: transparent; }
+#dest-list .icon-edit:hover { border-color: var(--border); }
+#dest-list .template { grid-area: 1 / 4; }
+#dest-list .actions { grid-area: 1 / 5; display: flex; gap: 2px; }
+#dest-list .detail {
+  grid-column: 4 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+}
+#dest-list .preview {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+#dest-list .preview.error { color: var(--danger); font-family: inherit; font-size: 12px; }
+#dest-list .icon-url { width: 100%; }
+#dest-list li.disabled .name, #dest-list li.disabled .template { color: var(--text-muted); }
+
+#dest-add { margin-top: 12px; }
+.add-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 180px) minmax(0, 1fr) auto;
+  gap: 6px;
+}
+#add-error { margin: 4px 0 0; font-size: 12px; }
+#add-error:empty { display: none; }
+
+/* Settings */
+.fields {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 10px 16px;
+  align-items: center;
+}
+.fields select { justify-self: start; }
+.checks { display: flex; flex-direction: column; gap: 6px; }
+.checks label { display: flex; align-items: center; gap: 8px; }
+
+#import-warnings { margin-top: 8px; font-size: 12px; }
+#import-warnings li { padding: 1px 0; }
+
+@media (max-width: 700px) {
+  .decks { grid-template-columns: 1fr; }
+  .fields { grid-template-columns: 1fr; gap: 4px; }
+  #dest-list > li { grid-template-columns: 16px 28px minmax(0, 1fr) auto; }
+  #dest-list .actions { grid-area: 1 / 4; }
+  #dest-list .template { grid-area: 2 / 1 / auto / -1; }
+  #dest-list .detail { grid-column: 1 / -1; }
+}

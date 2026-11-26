@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SearchDeck Settings</title>
+  <link rel="stylesheet" href="../src/ui.css">
+  <link rel="stylesheet" href="options.css">
+  <script src="../src/theme.js"></script>
+</head>
+<body>
+  <header class="page-head">
+    <h1>SearchDeck <span class="muted">Settings</span></h1>
+    <span id="status" role="status" aria-live="polite"></span>
+  </header>
+
+  <main>
+    <section class="decks" aria-labelledby="decks-title">
+      <nav aria-label="Decks">
+        <h2 id="decks-title">Decks</h2>
+        <ul id="deck-list"></ul>
+        <button type="button" id="deck-new">+ New deck</button>
+      </nav>
+
+      <div class="editor">
+        <div class="editor-head">
+          <input type="text" id="deck-name" aria-label="Deck name" maxlength="80">
+          <button type="button" id="deck-duplicate">Duplicate</button>
+          <button type="button" id="deck-delete" class="danger">Delete</button>
+        </div>
+
+        <label class="sample">
+          <span class="muted">Test templates with</span>
+          <input type="text" id="sample" value="AAPL" spellcheck="false">
+        </label>
+
+        <ul id="dest-list"></ul>
+
+        <form id="dest-add" autocomplete="off" novalidate>
+          <h3>Add destination</h3>
+          <div class="add-row">
+            <input type="text" id="add-name" placeholder="Name" aria-label="New destination name" maxlength="80">
+            <input type="text" id="add-template" class="mono" placeholder="https://example.com/search?q={query}" aria-label="New destination URL template" spellcheck="false">
+            <button type="submit">Add</button>
+          </div>
+          <p id="add-error" class="error" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
+    <section aria-labelledby="tabs-title">
+      <h2 id="tabs-title">Opening tabs</h2>
+      <div class="fields">
+        <label for="set-openIn">Open results in</label>
+        <select id="set-openIn">
+          <option value="current">The current window</option>
+          <option value="new">A new window</option>
+        </select>
+
+        <label for="set-foreground">Focus</label>
+        <select id="set-foreground">
+          <option value="true">Foreground — switch to the opened tabs</option>
+          <option value="false">Background — stay where I am</option>
+        </select>
+
+        <span>Tab group</span>
+        <div class="checks">
+          <label><input type="checkbox" id="set-groupTabs"> Put the opened tabs in a tab group named after the search term</label>
+          <label><input type="checkbox" id="set-groupIncludeDeck"> Include the deck name, e.g. “AAPL — Stock Research”</label>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="general-title">
+      <h2 id="general-title">General</h2>
+      <div class="fields">
+        <label for="set-theme">Theme</label>
+        <select id="set-theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <span>Keyboard shortcut</span>
+        <div class="inline">
+          <kbd id="shortcut">…</kbd>
+          <button type="button" id="shortcut-change">Change…</button>
+        </div>
+
+        <span>Address bar</span>
+        <span class="muted">Type <kbd>sd</kbd> then <kbd>Space</kbd> or <kbd>Tab</kbd>, a search term, and <kbd>Enter</kbd> to launch the active deck.</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="backup-title">
+      <h2 id="backup-title">Backup</h2>
+      <div class="inline">
+        <button type="button" id="export">Export JSON</button>
+        <button type="button" id="import">Import JSON…</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+        <button type="button" id="reset" class="danger">Restore defaults</button>
+      </div>
+      <ul id="import-warnings" class="muted"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

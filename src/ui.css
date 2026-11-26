@@ -1,0 +1,83 @@
+/* Shared tokens and controls for the popup and the settings page. */
+
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#ffffff, #1b1c1f);
+  --bg-subtle: light-dark(#f5f6f7, #232529);
+  --bg-hover: light-dark(#eceef0, #2c2f34);
+  --border: light-dark(#d9dce0, #383b41);
+  --text: light-dark(#1c1e21, #e6e7e9);
+  --text-muted: light-dark(#646a73, #9a9fa8);
+  --accent: light-dark(#2456d6, #7da2ff);
+  --accent-bg: light-dark(#2456d6, #3d68d8);
+  --accent-bg-hover: light-dark(#1c47b8, #4a76e6);
+  --accent-text: #ffffff;
+  --danger: light-dark(#b3261e, #ff8a80);
+  --radius: 5px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+
+input[type='text'], input[type='search'], input[type='url'], select {
+  height: 28px;
+  padding: 0 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+input::placeholder { color: var(--text-muted); }
+input[type='checkbox'] { accent-color: var(--accent-bg); margin: 0; }
+
+button {
+  height: 28px;
+  padding: 0 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+}
+button:hover:not(:disabled) { background: var(--bg-hover); }
+button:disabled { opacity: 0.45; cursor: default; }
+
+button.primary {
+  background: var(--accent-bg);
+  border-color: var(--accent-bg);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: var(--accent-bg-hover); border-color: var(--accent-bg-hover); }
+
+button.icon-btn {
+  width: 28px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+button.danger { color: var(--danger); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.favicon { width: 16px; height: 16px; flex: none; border-radius: 3px; }
+.muted { color: var(--text-muted); }
+.error { color: var(--danger); }

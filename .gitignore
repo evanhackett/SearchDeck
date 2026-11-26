@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Packaged extension builds and the private signing key Chrome's "Pack extension" creates
+*.crx
+*.zip
+*.pem
+
+# Node (only used to run tests; there are no dependencies today)
+node_modules/
+
+# Local Claude Code settings
+.claude/settings.local.json
