@@ -1,5 +1,7 @@
 # SearchDeck
 
+Inspired by a Chrome extension I used to use called "Search Center".
+
 Type one search term and open it on a whole deck of websites at once.
 
 A **deck** is a list of sites that accept the same search term (for example *Stock Research*: Finviz, Yahoo Finance, Seeking Alpha, …). Open the popup, type `AAPL`, press Enter, and every selected site opens in its own tab.
@@ -86,22 +88,20 @@ Needs Node 20 or newer and nothing else. The tests cover URL substitution and en
 
 The UI and the real Chrome APIs are not covered by the unit tests. After loading the extension, check:
 
-- [ ] Popup opens with the search box focused; typing a term and pressing Enter opens the checked destinations in deck order and closes the popup.
-- [ ] Escape closes the popup. Empty term shows "Enter a search term."
+- [x] Popup opens with the search box focused; typing a term and pressing Enter opens the checked destinations in deck order and closes the popup.
+- [x] Escape closes the popup. Empty term shows "Enter a search term."
 - [ ] Unchecking destinations and switching decks is remembered when the popup is reopened.
-- [ ] Keyboard shortcut opens the popup (assign it at `chrome://extensions/shortcuts` if it is not set).
-- [ ] `sd AAPL` in the address bar launches the active deck.
+- [x] Keyboard shortcut opens the popup (assign it at `chrome://extensions/shortcuts` if it is not set).
+- [x] `sd AAPL` in the address bar launches the active deck.
 - [ ] Each "Opening tabs" combination: current/new window, foreground/background, tab group on/off, group title with and without deck name.
 - [ ] Settings: create, rename, duplicate, delete, reorder decks; add, edit, remove, reorder, disable destinations; changes appear in the popup.
 - [ ] An invalid template (`ftp://x/{query}`, or no `{query}`) shows an error and is not saved.
 - [ ] Export, then Restore defaults, then Import the exported file brings everything back.
 - [ ] Importing a non-JSON file, or JSON without decks, shows an error and changes nothing.
-- [ ] Light, dark, and system themes in both popup and settings.
-- [ ] Favicons appear for sites you have visited.
+- [x] Light, dark, and system themes in both popup and settings.
+- [x] Favicons appear for sites you have visited.
 
 ## Notes on the default destinations
 
-- Finviz redirects `quote.ashx?t=` to its current quote page.
 - Stock Analysis uses `/stocks/{query}/`, which works for stocks but not ETFs (those live under `/etf/`).
 - Macrotrends has no ticker-only URL, so that destination is a Google `site:macrotrends.net` search.
-- TradingView opens its chart with the symbol; it may ask you to sign in for some features.
