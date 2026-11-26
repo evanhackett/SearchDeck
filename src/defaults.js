@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   groupIncludeDeck: true, // "AAPL — Stock Research" instead of "AAPL"
   foreground: true, // switch to the opened tabs / focus the new window
   theme: 'system', // 'system' | 'light' | 'dark'
+  contextMenu: true, // right-click menu for selected text
 });
 
 const dest = (id, name, template) => ({ id, name, template, enabled: true, favicon: '' });

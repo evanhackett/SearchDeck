@@ -27,8 +27,11 @@ Requires Chrome 123 or newer.
 | Switch deck | `Shift+Tab` from the search box to the deck dropdown, then arrow keys |
 | Pick destinations | `Tab` to the checkboxes, `Space` to toggle |
 | Launch from the address bar | Type `sd`, press `Space` or `Tab`, type the term, press `Enter` |
+| Search selected text | Select text on any page, right-click, open **SearchDeck: “…”**, pick one site or **All enabled in …** |
 
 The popup remembers the last deck and which destinations are checked. The address bar launches the active deck with its checked destinations.
+
+The right-click menu lists the active deck's destinations directly, with the other decks as submenus. **All enabled in …** opens that deck's checked destinations; picking a single site works even if it is unchecked. The menu can be turned off in settings.
 
 If Chrome did not assign the shortcut (it is skipped when another extension already uses it), set it at `chrome://extensions/shortcuts`. The settings page shows the current shortcut and links there.
 
@@ -43,6 +46,7 @@ Open with the button in the popup header, or right-click the toolbar icon → **
 - **Icons**: taken from Chrome's local favicon cache, so a site's icon appears after you have visited it. Click a destination's icon to set a custom icon URL instead.
 - **Opening tabs**: current or new window, foreground or background, optional tab group named after the search term (optionally with the deck name, e.g. `AAPL — Stock Research`).
 - **Theme**: system, light, or dark.
+- **Right-click menu**: show or hide the SearchDeck menu for selected text.
 - **Backup**: export everything as JSON, import it again, or restore the defaults. Import and restore replace the whole configuration and ask first.
 
 ## Permissions
@@ -52,6 +56,7 @@ Open with the button in the popup header, or right-click the toolbar icon → **
 | `storage` | Save decks and settings in `chrome.storage.local` |
 | `tabGroups` | Name the tab group when grouping is enabled |
 | `favicon` | Show site icons from Chrome's local favicon cache, without contacting any server |
+| `contextMenus` | Add the right-click menu for selected text. Chrome passes the selected text to the extension only when you click a menu item |
 
 No host permissions, no content scripts, no remote code. Search terms are never stored or sent anywhere; they only go into the URLs of the tabs you open. The one network request the extension's own pages can make is loading a custom icon URL, if you set one.
 
@@ -59,7 +64,7 @@ No host permissions, no content scripts, no remote code. Search terms are never 
 
 ```
 manifest.json
-background.js        service worker: runs launches for the popup, `sd` omnibox keyword
+background.js        service worker: runs launches for the popup, `sd` omnibox keyword, right-click menu
 src/defaults.js      default decks and settings
 src/core.js          pure logic: template validation, URL building, config normalization
 src/storage.js       load/save in chrome.storage.local
@@ -94,6 +99,7 @@ The UI and the real Chrome APIs are not covered by the unit tests. After loading
 - [ ] Unchecking destinations and switching decks is remembered when the popup is reopened.
 - [x] Keyboard shortcut opens the popup (assign it at `chrome://extensions/shortcuts` if it is not set).
 - [x] `sd AAPL` in the address bar launches the active deck.
+- [ ] Right-clicking selected text shows the SearchDeck menu; a single site opens one tab, **All enabled in …** opens the deck; the menu follows deck edits and the active deck, and disappears when turned off in settings.
 - [ ] Each "Opening tabs" combination: current/new window, foreground/background, tab group on/off, group title with and without deck name.
 - [ ] Settings: create, rename, duplicate, delete, reorder decks; add, edit, remove, reorder, disable destinations; changes appear in the popup.
 - [x] Dragging a deck or destination by its handle reorders it and the order persists; Escape or dropping outside the list cancels; ↑ ↓ on a focused handle also moves it.

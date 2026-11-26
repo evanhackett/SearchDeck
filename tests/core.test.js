@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   LIMITS,
+  buildMenuItems,
   buildUrl,
   duplicateDeck,
   getActiveDeck,
@@ -10,6 +11,7 @@ import {
   moveItem,
   normalizeConfig,
   normalizeSettings,
+  parseMenuId,
   templateOrigin,
   validateFavicon,
   validateTemplate,
@@ -216,4 +218,55 @@ test('moveItem', () => {
   assert.equal(moveItem(list, 2, 2), false);
   assert.equal(moveItem(list, NaN, 1), false);
   assert.deepEqual(list, ['b', 'a', 'c', 'd']);
+});
+
+test('buildMenuItems: active deck at the top level, other decks as submenus', () => {
+  const config = defaultConfig();
+  config.activeDeckId = 'general-search';
+  config.decks[1].destinations[1].enabled = false; // Bing
+  config.decks[0].name = 'Stocks & ETFs';
+  const items = buildMenuItems(config);
+
+  assert.deepEqual(items[0], { id: 'root', title: 'SearchDeck: “%s”' });
+  assert.deepEqual(items[1], { id: 'all:general-search', parentId: 'root', title: 'All enabled in General Search (4)', enabled: true });
+  assert.deepEqual(items[2], { id: 'sep:general-search', parentId: 'root', type: 'separator' });
+  assert.deepEqual(
+    items.filter((i) => i.parentId === 'root' && i.id.startsWith('dest:')).map((i) => i.title),
+    ['Google', 'Bing', 'Reddit', 'YouTube', 'Wikipedia'], // disabled destinations can still be picked individually
+  );
+  assert.deepEqual(items.find((i) => i.id === 'deck:stock-research'), { id: 'deck:stock-research', parentId: 'root', title: 'Stocks && ETFs' });
+  const sub = items.filter((i) => i.parentId === 'deck:stock-research');
+  assert.equal(sub[0].title, 'All enabled in Stocks && ETFs (8)');
+  assert.equal(sub.length, 10); // all + separator + 8 destinations
+
+  // every parent is created before its children, and ids are unique
+  const seen = new Set();
+  for (const item of items) {
+    assert.ok(!item.parentId || seen.has(item.parentId), item.id);
+    assert.ok(!seen.has(item.id), item.id);
+    seen.add(item.id);
+  }
+});
+
+test('buildMenuItems: edge cases', () => {
+  const config = defaultConfig();
+  config.settings.contextMenu = false;
+  assert.deepEqual(buildMenuItems(config), []);
+
+  const single = normalizeConfig({ decks: [{ id: 'd', name: 'Empty', destinations: [] }] }).config;
+  assert.deepEqual(buildMenuItems(single).map((i) => [i.id, i.enabled]), [
+    ['root', undefined],
+    ['all:d', false],
+  ]);
+});
+
+test('parseMenuId', () => {
+  assert.deepEqual(parseMenuId('all:stock-research'), { deckId: 'stock-research' });
+  assert.deepEqual(parseMenuId('dest:stock-research:stock-finviz'), { deckId: 'stock-research', destinationIds: ['stock-finviz'] });
+  for (const id of ['root', 'sep:decks', 'deck:stock-research', 'dest:only-deck', '', undefined, 7]) {
+    assert.equal(parseMenuId(id), null);
+  }
+  for (const item of buildMenuItems(defaultConfig())) {
+    assert.equal(parseMenuId(item.id) !== null, /^(all|dest):/.test(item.id));
+  }
 });

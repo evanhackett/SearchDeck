@@ -81,6 +81,7 @@ export function normalizeSettings(raw) {
     groupIncludeDeck: bool('groupIncludeDeck'),
     foreground: bool('foreground'),
     theme: oneOf('theme', ['system', 'light', 'dark']),
+    contextMenu: bool('contextMenu'),
   };
 }
 
@@ -182,4 +183,48 @@ export function moveItem(list, from, to) {
   const [item] = list.splice(from, 1);
   list.splice(to, 0, item);
   return true;
+}
+
+export const MENU_ROOT = 'root';
+
+/**
+ * Right-click menu for selected text, as a flat list of chrome.contextMenus
+ * items (parents before children). The active deck's destinations sit directly
+ * under the root; every other deck gets a submenu. Ids encode the target:
+ * "all:<deckId>" and "dest:<deckId>:<destinationId>" (ids never contain ":").
+ */
+export function buildMenuItems(config) {
+  if (!config.settings.contextMenu) return [];
+  const escape = (text) => text.replaceAll('&', '&&'); // a single & marks an access key
+  const items = [{ id: MENU_ROOT, title: 'SearchDeck: “%s”' }];
+
+  const addDeck = (deck, parentId) => {
+    const count = deck.destinations.filter((d) => d.enabled).length;
+    items.push({
+      id: `all:${deck.id}`,
+      parentId,
+      title: `All enabled in ${escape(deck.name)} (${count})`,
+      enabled: count > 0,
+    });
+    if (deck.destinations.length) items.push({ id: `sep:${deck.id}`, parentId, type: 'separator' });
+    for (const d of deck.destinations) items.push({ id: `dest:${deck.id}:${d.id}`, parentId, title: escape(d.name) });
+  };
+
+  const active = getActiveDeck(config);
+  addDeck(active, MENU_ROOT);
+  const others = config.decks.filter((deck) => deck !== active);
+  if (others.length) items.push({ id: 'sep:decks', parentId: MENU_ROOT, type: 'separator' });
+  for (const deck of others) {
+    items.push({ id: `deck:${deck.id}`, parentId: MENU_ROOT, title: escape(deck.name) });
+    addDeck(deck, `deck:${deck.id}`);
+  }
+  return items;
+}
+
+/** Turns a clicked menu id into launch() arguments, or null for non-launching items. */
+export function parseMenuId(id) {
+  const [kind, deckId, destinationId] = String(id).split(':');
+  if (kind === 'all' && deckId) return { deckId };
+  if (kind === 'dest' && deckId && destinationId) return { deckId, destinationIds: [destinationId] };
+  return null;
 }

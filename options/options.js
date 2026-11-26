@@ -320,6 +320,7 @@ function renderSettings() {
   $('set-groupIncludeDeck').checked = s.groupIncludeDeck;
   $('set-groupIncludeDeck').disabled = !s.groupTabs;
   $('set-theme').value = s.theme;
+  $('set-contextMenu').checked = s.contextMenu;
   applyTheme(s.theme);
 }
 
@@ -411,7 +412,7 @@ function bindEvents() {
     $('add-name').focus();
   });
 
-  for (const id of ['set-openIn', 'set-foreground', 'set-groupTabs', 'set-groupIncludeDeck', 'set-theme']) {
+  for (const id of ['set-openIn', 'set-foreground', 'set-groupTabs', 'set-groupIncludeDeck', 'set-theme', 'set-contextMenu']) {
     $(id).addEventListener('change', () => {
       config.settings = {
         openIn: $('set-openIn').value,
@@ -419,6 +420,7 @@ function bindEvents() {
         groupTabs: $('set-groupTabs').checked,
         groupIncludeDeck: $('set-groupIncludeDeck').checked,
         theme: $('set-theme').value,
+        contextMenu: $('set-contextMenu').checked,
       };
       renderSettings();
       commit();
