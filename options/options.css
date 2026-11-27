@@ -143,6 +143,8 @@ li.dragging { opacity: 0.35; }
 }
 #add-error { margin: 4px 0 0; font-size: 12px; }
 #add-error:empty { display: none; }
+.hint { margin: 4px 0 0; font-size: 12px; }
+.hint code { font-family: var(--mono); }
 
 /* Settings */
 .fields {

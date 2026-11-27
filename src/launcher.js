@@ -1,17 +1,16 @@
 // Opens the destinations of a deck for a query, honouring the tab settings.
 
-import { buildUrl, getActiveDeck, groupTitle } from './core.js';
+import { buildUrl, getActiveDeck, groupTitle, needsQuery } from './core.js';
 
 /**
  * @param config  normalized configuration
- * @param request { query, deckId?, destinationIds? } — without deckId the active
+ * @param request { query?, deckId?, destinationIds? } — without deckId the active
  *                deck is used; without destinationIds the enabled destinations.
  * @returns {Promise<{ opened: number, failed: string[], error?: string }>}
  *          `failed` lists the names of destinations that could not be opened.
  */
 export async function launch(config, { query, deckId, destinationIds } = {}) {
   const term = typeof query === 'string' ? query.trim() : '';
-  if (!term) return { opened: 0, failed: [], error: 'Enter a search term.' };
 
   const deck = deckId ? config.decks.find((d) => d.id === deckId) : getActiveDeck(config);
   if (!deck) return { opened: 0, failed: [], error: 'That deck no longer exists.' };
@@ -19,6 +18,8 @@ export async function launch(config, { query, deckId, destinationIds } = {}) {
   const wanted = Array.isArray(destinationIds) ? new Set(destinationIds) : null;
   const selected = deck.destinations.filter((d) => (wanted ? wanted.has(d.id) : d.enabled));
   if (!selected.length) return { opened: 0, failed: [], error: 'No destinations are selected.' };
+  // Fixed URLs open without a search term; anything with {query} needs one.
+  if (!term && selected.some((d) => needsQuery(d.template))) return { opened: 0, failed: [], error: 'Enter a search term.' };
 
   const failed = [];
   const items = [];

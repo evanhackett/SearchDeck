@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   LIMITS,
   buildMenuItems,
+  needsQuery,
   buildUrl,
   duplicateDeck,
   getActiveDeck,
@@ -43,8 +44,17 @@ test('buildUrl returns null for unusable input', () => {
   assert.equal(buildUrl('https://example.com/?q={query}', undefined), null);
   assert.equal(buildUrl('https://example.com/?q={query}', '\ud800'), null); // lone surrogate
   assert.equal(buildUrl('javascript:alert({query})', 'x'), null);
-  assert.equal(buildUrl('https://example.com/', 'x'), null);
   assert.equal(buildUrl(null, 'x'), null);
+});
+
+test('buildUrl returns fixed URLs (no placeholder) with or without a query', () => {
+  assert.equal(buildUrl('https://example.com/page?a=1', ''), 'https://example.com/page?a=1');
+  assert.equal(buildUrl('https://example.com/page?a=1', undefined), 'https://example.com/page?a=1');
+  assert.equal(buildUrl('https://example.com/page?a=1', 'ignored'), 'https://example.com/page?a=1');
+  assert.equal(buildUrl('javascript:alert(1)', ''), null);
+  assert.equal(needsQuery('https://example.com/'), false);
+  assert.equal(needsQuery('https://example.com/{query}'), true);
+  assert.equal(needsQuery(null), false);
 });
 
 test('buildUrl cannot be steered to another scheme by the query', () => {
@@ -55,6 +65,7 @@ test('buildUrl cannot be steered to another scheme by the query', () => {
 test('validateTemplate accepts http and https templates', () => {
   assert.equal(validateTemplate('https://example.com/search?q={query}'), null);
   assert.equal(validateTemplate('http://localhost:8080/{query}'), null);
+  assert.equal(validateTemplate('https://example.com/dashboard'), null); // fixed URL
   for (const deck of defaultConfig().decks) {
     for (const d of deck.destinations) assert.equal(validateTemplate(d.template), null, d.name);
   }
@@ -63,10 +74,10 @@ test('validateTemplate accepts http and https templates', () => {
 test('validateTemplate rejects bad templates with a message', () => {
   assert.match(validateTemplate(''), /required/);
   assert.match(validateTemplate(undefined), /required/);
-  assert.match(validateTemplate('https://example.com/search'), /\{query\}/);
   assert.match(validateTemplate('example.com/?q={query}'), /valid URL/);
   assert.match(validateTemplate('https://exa mple.com/?q={query}'), /spaces/);
   assert.match(validateTemplate('javascript:alert("{query}")'), /http/);
+  assert.match(validateTemplate('javascript:alert(1)'), /http/);
   assert.match(validateTemplate('data:text/html,{query}'), /http/);
   assert.match(validateTemplate('file:///etc/{query}'), /http/);
   assert.match(validateTemplate('chrome://settings/{query}'), /http/);
@@ -90,6 +101,8 @@ test('templateOrigin', () => {
 test('groupTitle', () => {
   assert.equal(groupTitle(' AAPL ', 'Stock Research', true), 'AAPL — Stock Research');
   assert.equal(groupTitle('AAPL', 'Stock Research', false), 'AAPL');
+  assert.equal(groupTitle('', 'Morning tabs', false), 'Morning tabs');
+  assert.equal(groupTitle('  ', 'Morning tabs', true), 'Morning tabs');
 });
 
 test('default configuration is already normalized', () => {
@@ -116,15 +129,16 @@ test('normalizeConfig drops invalid destinations and reports them', () => {
         destinations: [
           { name: 'Good', template: 'https://example.com/?q={query}' },
           { name: 'Script', template: 'javascript:alert("{query}")' },
-          { name: 'No placeholder', template: 'https://example.com/' },
+          { name: 'Fixed', template: 'https://example.com/' },
+          { name: 'File', template: 'file:///etc/passwd' },
           { name: 'Bad icon', template: 'https://example.org/{query}', favicon: 'javascript:alert(1)' },
           'garbage',
         ],
       },
     ],
   });
-  assert.deepEqual(config.decks[0].destinations.map((d) => d.name), ['Good', 'Bad icon']);
-  assert.equal(config.decks[0].destinations[1].favicon, '');
+  assert.deepEqual(config.decks[0].destinations.map((d) => d.name), ['Good', 'Fixed', 'Bad icon']);
+  assert.equal(config.decks[0].destinations[2].favicon, '');
   assert.equal(warnings.length, 4);
   assert.match(warnings[0], /Mixed › Script skipped/);
 });

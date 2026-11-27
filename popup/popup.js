@@ -1,4 +1,4 @@
-import { getActiveDeck } from '../src/core.js';
+import { getActiveDeck, needsQuery } from '../src/core.js';
 import { loadConfig, saveConfig } from '../src/storage.js';
 import { applyTheme, faviconEl, h } from '../src/ui.js';
 
@@ -80,7 +80,14 @@ function updateSummary() {
   els.count.textContent = `${selected} of ${total}`;
   els.open.textContent = selected ? `Open ${selected} ${selected === 1 ? 'Tab' : 'Tabs'}` : 'Open Tabs';
   els.open.disabled = selected === 0;
+  els.query.placeholder = selectionNeedsQuery() ? 'Search term, then Enter' : 'No search term needed, press Enter';
   setStatus('');
+}
+
+/** False when every checked destination is a fixed URL (or nothing is checked). */
+function selectionNeedsQuery() {
+  const selected = deck.destinations.filter((d) => d.enabled);
+  return selected.length === 0 || selected.some((d) => needsQuery(d.template));
 }
 
 function save() {
@@ -94,15 +101,15 @@ function setStatus(text) {
 
 async function onSubmit(event) {
   event.preventDefault();
-  const query = els.query.value.trim();
-  if (!query) {
-    setStatus('Enter a search term.');
-    els.query.focus();
-    return;
-  }
   const destinationIds = deck.destinations.filter((d) => d.enabled).map((d) => d.id);
   if (!destinationIds.length) {
     setStatus('Select at least one destination.');
+    return;
+  }
+  const query = els.query.value.trim();
+  if (!query && selectionNeedsQuery()) {
+    setStatus('Enter a search term.');
+    els.query.focus();
     return;
   }
 

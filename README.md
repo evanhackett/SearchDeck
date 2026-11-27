@@ -23,6 +23,7 @@ Requires Chrome 123 or newer.
 |---|---|
 | Open the popup | Click the toolbar icon or press `Alt+Shift+S` (`Option+Shift+S` on macOS) |
 | Launch | Type a search term, press `Enter` |
+| Open a deck of fixed URLs | Select the deck, press `Enter` with the search box empty |
 | Close without launching | `Escape` |
 | Switch deck | `Shift+Tab` from the search box to the deck dropdown, then arrow keys |
 | Pick destinations | `Tab` to the checkboxes, `Space` to toggle |
@@ -42,7 +43,7 @@ Open with the button in the popup header, or right-click the toolbar icon → **
 - **Decks**: create, rename (edit the name field), duplicate, delete, drag to reorder.
 - **Destinations**: add, edit, remove, drag to reorder, enable or disable. Edits save as soon as you leave a field.
 - **Reordering**: drag a row by its ⋮⋮ handle. From the keyboard, focus the handle and press ↑ or ↓.
-- **URL templates** must be `http://` or `https://` and contain `{query}`, which is replaced by the URL-encoded search term. Each row shows the resulting URL for the sample term; **Test** opens it. An invalid edit shows an error and is not saved.
+- **URL templates** must be `http://` or `https://`. `{query}` is replaced by the URL-encoded search term. A template without `{query}` is a fixed URL that opens as is. Each row shows the resulting URL for the sample term; **Test** opens it. An invalid edit shows an error and is not saved.
 - **Icons**: taken from Chrome's local favicon cache, so a site's icon appears after you have visited it. Click a destination's icon to set a custom icon URL instead.
 - **Opening tabs**: current or new window, foreground or background, optional tab group named after the search term (optionally with the deck name, e.g. `AAPL — Stock Research`).
 - **Theme**: system, light, or dark.
@@ -103,7 +104,8 @@ The UI and the real Chrome APIs are not covered by the unit tests. After loading
 - [ ] Each "Opening tabs" combination: current/new window, foreground/background, tab group on/off, group title with and without deck name.
 - [ ] Settings: create, rename, duplicate, delete, reorder decks; add, edit, remove, reorder, disable destinations; changes appear in the popup.
 - [x] Dragging a deck or destination by its handle reorders it and the order persists; Escape or dropping outside the list cancels; ↑ ↓ on a focused handle also moves it.
-- [ ] An invalid template (`ftp://x/{query}`, or no `{query}`) shows an error and is not saved.
+- [ ] An invalid template (`ftp://x/{query}`, or `example.com` without `https://`) shows an error and is not saved.
+- [ ] A deck whose checked destinations are all fixed URLs (no `{query}`) opens on Enter with an empty search box; if any checked destination has `{query}`, an empty box shows "Enter a search term."
 - [ ] Export, then Restore defaults, then Import the exported file brings everything back.
 - [ ] Importing a non-JSON file, or JSON without decks, shows an error and changes nothing.
 - [x] Light, dark, and system themes in both popup and settings.

@@ -21,14 +21,21 @@ function parseTemplate(template) {
   }
 }
 
-/** Returns an error message, or null when the template is usable. */
+/** True when the template has a {query} placeholder; false for a fixed URL. */
+export function needsQuery(template) {
+  return typeof template === 'string' && template.includes(PLACEHOLDER);
+}
+
+/**
+ * Returns an error message, or null when the template is usable.
+ * {query} is optional: a template without it is a fixed URL.
+ */
 export function validateTemplate(template) {
   if (typeof template !== 'string' || !template.trim()) return 'URL template is required.';
   if (template.length > LIMITS.template) return `URL template is longer than ${LIMITS.template} characters.`;
   if (/\s/.test(template.trim())) return 'URL template must not contain spaces.';
-  if (!template.includes(PLACEHOLDER)) return `URL template must contain ${PLACEHOLDER} where the search term goes.`;
   const url = parseTemplate(template.trim());
-  if (!url) return 'Not a valid URL. Templates look like https://example.com/search?q={query}';
+  if (!url) return 'Not a valid URL. Use a full address such as https://example.com/search?q={query}';
   if (!isWebUrl(url)) return 'Only http:// and https:// URLs are allowed.';
   return null;
 }
@@ -51,12 +58,13 @@ export function templateOrigin(template) {
 }
 
 /**
- * Substitutes the URL-encoded query into the template.
- * Returns the final URL, or null if the result is not a valid http(s) URL.
+ * Substitutes the URL-encoded query into the template. A fixed URL (no {query})
+ * is returned as is, with or without a query. Returns null if the template
+ * needs a query and there is none, or the result is not a valid http(s) URL.
  */
 export function buildUrl(template, query) {
   const term = typeof query === 'string' ? query.trim() : '';
-  if (!term || validateTemplate(template)) return null;
+  if (validateTemplate(template) || (!term && needsQuery(template))) return null;
   try {
     const encoded = encodeURIComponent(term);
     const url = new URL(template.trim().replaceAll(PLACEHOLDER, () => encoded));
@@ -68,6 +76,7 @@ export function buildUrl(template, query) {
 
 export function groupTitle(query, deckName, includeDeck) {
   const term = String(query).trim();
+  if (!term) return deckName; // a deck of fixed URLs launched without a search term
   return includeDeck && deckName ? `${term} — ${deckName}` : term;
 }
 

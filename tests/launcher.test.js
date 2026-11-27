@@ -125,6 +125,36 @@ test('reports errors instead of throwing', async () => {
   assert.equal(calls.length, 0);
 });
 
+test('fixed URLs open without a search term; mixed selections still need one', async () => {
+  const fixedDeck = () => {
+    const config = general({ groupTabs: true });
+    config.decks.push({
+      id: 'morning',
+      name: 'Morning',
+      destinations: [
+        { id: 'm1', name: 'Mail', template: 'https://mail.example.com/inbox', enabled: true, favicon: '' },
+        { id: 'm2', name: 'News', template: 'https://news.example.com/', enabled: true, favicon: '' },
+        { id: 'm3', name: 'Search', template: 'https://example.com/?q={query}', enabled: false, favicon: '' },
+      ],
+    });
+    return config;
+  };
+
+  let calls = fakeChrome();
+  assert.deepEqual(await launch(fixedDeck(), { deckId: 'morning' }), { opened: 2, failed: [] });
+  assert.deepEqual(calls.slice(0, 2).map(([, p]) => p.url), ['https://mail.example.com/inbox', 'https://news.example.com/']);
+  assert.deepEqual(calls.at(-1), ['tabGroups.update', 42, { title: 'Morning' }]); // no term: group is named after the deck
+
+  calls = fakeChrome();
+  const mixed = await launch(fixedDeck(), { query: '', deckId: 'morning', destinationIds: ['m1', 'm3'] });
+  assert.match(mixed.error, /search term/);
+  assert.equal(calls.length, 0);
+
+  calls = fakeChrome();
+  await launch(fixedDeck(), { query: 'x', deckId: 'morning', destinationIds: ['m1', 'm3'] });
+  assert.deepEqual(calls.slice(0, 2).map(([, p]) => p.url), ['https://mail.example.com/inbox', 'https://example.com/?q=x']);
+});
+
 test('loadConfig: defaults when empty, repair when malformed, backup when unreadable', async () => {
   const store = {};
   globalThis.chrome = {
